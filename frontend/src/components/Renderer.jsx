@@ -1,6 +1,6 @@
 // frontend/src/components/Renderer.jsx
 import React from 'react';
-import { ComponentMap } from './Library';
+import { ComponentMap } from './ComponentMap';
 
 export const UIRenderer = ({ node }) => {
   if (!node) return null;
