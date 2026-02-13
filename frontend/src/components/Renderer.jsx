@@ -4,13 +4,14 @@ import { ComponentMap } from './ComponentMap';
 export const UIRenderer = ({ node }) => {
   if (!node || !node.component) return null;
 
+  // REMOVE the 'div' fallback here to force the error message
   const Component = ComponentMap[node.component];
 
-  // SAFETY: Show explicit error for unauthorized components like 'div'
   if (!Component) {
+    // This is what Jayant will want to see in the demo:
     return (
-      <div className="p-4 my-2 border-2 border-dashed border-red-300 bg-red-50 text-red-600 rounded-lg font-mono text-xs">
-        ⚠️ Unknown component: {node.component}
+      <div className="p-4 border border-red-200 bg-red-50 text-red-600 rounded-lg font-mono text-sm">
+        Unknown component: {node.component}
       </div>
     );
   }
