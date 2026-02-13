@@ -46,6 +46,9 @@ RULES:
 - No new components.
 - For modifications: ONLY change the specific part requested, preserve the rest of the ui_tree.
 `;
+ app.get('/', (req, res) => {
+  res.send('Ryze AI Backend Orchestrator: System Online 🚀');
+});
 
 app.post('/api/generate', async (req, res) => {
   const { prompt, history } = req.body;
