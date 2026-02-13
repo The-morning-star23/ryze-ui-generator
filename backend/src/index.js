@@ -23,7 +23,7 @@ console.log("Groq API Key status:", process.env.GROQ_API_KEY ? "CONFIGURED" : "M
 const COMPONENT_REGISTRY = {
   Navbar: { props: ['logoText', 'links'] },
   Sidebar: { props: ['items'] },
-  Card: { props: ['title', 'description'] },
+  Card: { props: ['title', 'description', 'status'] }, // status: 'default' | 'success' | 'warning' | 'danger'
   Table: { props: ['headers', 'rows'] },
   Button: { props: ['label', 'variant'] },
   Input: { props: ['label', 'placeholder', 'type'] },
@@ -33,21 +33,27 @@ const COMPONENT_REGISTRY = {
 
 /**
  * THE SYSTEM PROMPT
- * Enforces the Planner/Generator/Explainer logic and bans hallucinations.
+ * Enforces the Planner/Generator/Explainer logic and strict safety boundaries.
  */
 const SYSTEM_PROMPT = `
 You are a Deterministic UI JSON Generator. You output ONLY raw JSON.
 
 ### 🔒 THE GOLDEN RULE
 Use ONLY the components in this registry: ${JSON.stringify(COMPONENT_REGISTRY)}.
-- NEVER use standard HTML tags (div, span, p, h1).
+- NEVER use standard HTML tags (div, span, p, h1). If requested, generate the closest registry component instead.
 - NEVER use typos like "Narbar", "Sibbar", or "tritle".
 - Use "Navbar", "Sidebar", and "title" exactly as written.
+
+### 🎨 STYLING & COLORS
+- You cannot use custom CSS, Tailwind classes, hex codes, or RGB colors.
+- TEXT COLOR: To change text color of a Card title, use the "status" prop: "default", "success", "warning", or "danger".
+- BACKGROUNDS: Global background modifications are strictly prohibited. 
+- If a user asks for a background change or an unauthorized tag (like div), omit that specific part and explain why in your 'explanation' field to maintain system determinism.
 
 ### 🏗️ OUTPUT STRUCTURE
 {
   "planner": "Brief step-by-step architectural plan.",
-  "explanation": "Why you chose these components.",
+  "explanation": "Why you chose these components and any safety omissions made.",
   "ui_tree": {
     "component": "ComponentName",
     "props": { ... },
@@ -58,7 +64,6 @@ Use ONLY the components in this registry: ${JSON.stringify(COMPONENT_REGISTRY)}.
 ### 🔄 ITERATION RULES
 - If history is provided, ONLY modify the requested parts. 
 - Preserve the existing ui_tree structure unless a full rewrite is asked.
-- For dashboards, use Sidebar as the root wrapper or main layout.
 `;
 
 app.get('/', (req, res) => {
@@ -76,12 +81,11 @@ app.post('/api/generate', async (req, res) => {
         ...history, 
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" } // Forces strict JSON output
+      response_format: { type: "json_object" } 
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
 
-    // Normalize response to ensure keys match frontend expectations
     res.json({
       planner: result.planner || result.plan || "Plan generated.",
       ui_tree: result.ui_tree,

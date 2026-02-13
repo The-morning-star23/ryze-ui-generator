@@ -8,14 +8,28 @@ export const Button = ({ label, variant = 'primary', ...props }) => {
   return <button className={styles} {...props}>{label || 'Button'}</button>;
 };
 
-// 2. Card - Structured container
-export const Card = ({ title, description, children }) => (
-  <div className="border border-gray-200 rounded-xl p-5 shadow-sm bg-white mb-4">
-    {title && <h3 className="text-lg font-bold text-gray-800 mb-1">{title}</h3>}
-    {description && <p className="text-sm text-gray-500 mb-4">{description}</p>}
-    <div className="space-y-4">{children}</div>
-  </div>
-);
+// 2. Card - Structured container with semantic text coloring
+export const Card = ({ title, description, children, status = 'default' }) => {
+  // Hardcoded semantic color mapping to ensure determinism
+  const textColorMap = {
+    default: "text-gray-800",
+    success: "text-green-600",
+    warning: "text-yellow-600",
+    danger: "text-red-600"
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-xl p-5 shadow-sm bg-white mb-4">
+      {title && (
+        <h3 className={`text-lg font-bold mb-1 ${textColorMap[status] || textColorMap.default}`}>
+          {title}
+        </h3>
+      )}
+      {description && <p className="text-sm text-gray-500 mb-4">{description}</p>}
+      <div className="space-y-4">{children}</div>
+    </div>
+  );
+};
 
 // 3. Input - Standardized form field
 export const Input = ({ label, placeholder, type = 'text', ...props }) => (
@@ -36,7 +50,6 @@ export const Navbar = ({ logoText = "RYZE", links = [] }) => (
     <div className="font-black text-xl tracking-tighter text-blue-600">{logoText}</div>
     <div className="flex gap-6">
       {links.map((link, i) => {
-        // Extract string label from potential AI objects
         const label = typeof link === 'object' && link !== null 
           ? (link.label || link.text || link.url || "Link") 
           : link;
@@ -72,7 +85,6 @@ export const Table = ({ headers = [], rows = [] }) => (
 
 // 6. Sidebar - Layout wrapper
 export const Sidebar = ({ items = [], children }) => {
-  // Ensure items is always an array of strings even if AI fails
   const safeItems = Array.isArray(items) ? items : [];
 
   return (
@@ -119,7 +131,6 @@ export const Modal = ({ title, children, isOpen = true }) => {
       <div className="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl border border-white/20 animate-in zoom-in-95 duration-200">
         <h3 className="text-xl font-black text-gray-800 mb-2 tracking-tight">{title}</h3>
         <div className="text-sm text-gray-500 leading-relaxed mb-6">
-          {/* If children is an object with a text property, render text to avoid Error #31 */}
           {typeof children === 'object' && children !== null ? (children.text || JSON.stringify(children)) : children}
         </div>
         <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
