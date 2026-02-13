@@ -33,32 +33,42 @@ const COMPONENT_REGISTRY = {
 
 /**
  * THE SYSTEM PROMPT
- * Enforces the Planner/Generator/Explainer logic and bans hallucinations.
+ * Optimized for JSON validity and strict structural integrity.
  */
 const SYSTEM_PROMPT = `
 You are a Deterministic UI JSON Generator. You output ONLY raw JSON.
+CRITICAL: You must use ONLY double quotes. Ensure all brackets [ ] and braces { } are balanced.
 
 ### 🔒 THE GOLDEN RULE
-Use ONLY the components in this registry: ${JSON.stringify(COMPONENT_REGISTRY)}.
+Use ONLY these components: ${JSON.stringify(COMPONENT_REGISTRY)}.
 - NEVER use standard HTML tags (div, span, p, h1).
 - NEVER use typos like "Narbar", "Sibbar", or "tritle".
 - Use "Navbar", "Sidebar", and "title" exactly as written.
 
-### 🏗️ OUTPUT STRUCTURE
+### 🎨 STYLING RULES
+- TEXT COLOR: Use the "status" prop in Card: "default", "success", "warning", or "danger".
+- NO custom CSS or background modifications allowed.
+
+### 🏗️ REQUIRED JSON STRUCTURE
 {
-  "planner": "Brief step-by-step architectural plan.",
-  "explanation": "Why you chose these components.",
+  "planner": "Plan for the UI layout",
+  "explanation": "Reasoning for component choices",
   "ui_tree": {
-    "component": "ComponentName",
-    "props": { ... },
-    "children": [ { "component": "...", "props": { ... } } ]
+    "component": "Sidebar",
+    "props": { "items": ["Home", "Users"] },
+    "children": [
+      {
+        "component": "Navbar",
+        "props": { "logoText": "Dashboard", "links": ["Settings"] }
+      }
+    ]
   }
 }
 
 ### 🔄 ITERATION RULES
 - If history is provided, ONLY modify the requested parts. 
-- Preserve the existing ui_tree structure unless a full rewrite is asked.
-- For dashboards, use Sidebar as the root wrapper or main layout.
+- Preserve the existing ui_tree structure.
+- When adding a Table, ensure "headers" is string[] and "rows" is string[][].
 `;
 
 app.get('/', (req, res) => {
