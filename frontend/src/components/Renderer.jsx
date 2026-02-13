@@ -32,13 +32,13 @@ export const UIRenderer = ({ node }) => {
 
     if (Array.isArray(children)) {
       return children.map((child, i) => {
-        // If the child is a valid nested component node
+        // If it's a valid nested component node, recurse
         if (typeof child === 'object' && child !== null && child.component) {
           return <UIRenderer key={i} node={child} />;
         }
-        // If the child is an object with text (fixes React Error #31)
+        // NEW FIX: If it's a data object (like {label: '...'}), extract the string
         if (typeof child === 'object' && child !== null) {
-          return child.text || child.label || JSON.stringify(child);
+          return child.label || child.text || child.title || JSON.stringify(child);
         }
         // Fallback for strings/numbers
         return child;
@@ -47,7 +47,7 @@ export const UIRenderer = ({ node }) => {
 
     // Handle single children that might be objects
     if (typeof children === 'object' && children !== null && !children.component) {
-      return children.text || children.label || JSON.stringify(children);
+      return children.label || children.text || children.title || JSON.stringify(children);
     }
 
     return children;
