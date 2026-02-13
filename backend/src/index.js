@@ -16,61 +16,84 @@ const openai = new OpenAI({
 
 console.log("Groq API Key status:", process.env.GROQ_API_KEY ? "CONFIGURED" : "MISSING");
 
+/**
+ * DETERMINISTIC COMPONENT REGISTRY
+ * These are the ONLY components and props the AI is allowed to use.
+ */
 const COMPONENT_REGISTRY = {
-  Button: { props: ['label', 'variant', 'size'] },
-  Card: { props: ['title', 'description'] },
-  Input: { props: ['label', 'placeholder', 'type'] },
-  Table: { props: ['headers', 'rows'] },
   Navbar: { props: ['logoText', 'links'] },
-  Sidebar: { props: ['items'] }
+  Sidebar: { props: ['items'] },
+  Card: { props: ['title', 'description'] },
+  Table: { props: ['headers', 'rows'] },
+  Button: { props: ['label', 'variant'] },
+  Input: { props: ['label', 'placeholder', 'type'] },
+  Chart: { props: ['title', 'type'] },
+  Modal: { props: ['title', 'isOpen'] }
 };
 
-// THE SYSTEM PROMPT (Enforces Planner/Generator/Explainer logic)
+/**
+ * THE SYSTEM PROMPT
+ * Enforces the Planner/Generator/Explainer logic and bans hallucinations.
+ */
 const SYSTEM_PROMPT = `
-You are an AI UI Architect. You output ONLY valid JSON.
-You must build UIs using ONLY these components: ${JSON.stringify(COMPONENT_REGISTRY)}.
+You are a Deterministic UI JSON Generator. You output ONLY raw JSON.
 
-Your response must follow this structure:
+### 🔒 THE GOLDEN RULE
+Use ONLY the components in this registry: ${JSON.stringify(COMPONENT_REGISTRY)}.
+- NEVER use standard HTML tags (div, span, p, h1).
+- NEVER use typos like "Narbar", "Sibbar", or "tritle".
+- Use "Navbar", "Sidebar", and "title" exactly as written.
+
+### 🏗️ OUTPUT STRUCTURE
 {
-  "plan": "Step-by-step logic for the layout",
+  "planner": "Brief step-by-step architectural plan.",
+  "explanation": "Why you chose these components.",
   "ui_tree": {
     "component": "ComponentName",
     "props": { ... },
     "children": [ { "component": "...", "props": { ... } } ]
-  },
-  "explanation": "Why you chose these specific components."
+  }
 }
 
-RULES:
-- No custom CSS or Tailwind classes in props.
-- No new components.
-- For modifications: ONLY change the specific part requested, preserve the rest of the ui_tree.
+### 🔄 ITERATION RULES
+- If history is provided, ONLY modify the requested parts. 
+- Preserve the existing ui_tree structure unless a full rewrite is asked.
+- For dashboards, use Sidebar as the root wrapper or main layout.
 `;
- app.get('/', (req, res) => {
+
+app.get('/', (req, res) => {
   res.send('Ryze AI Backend Orchestrator: System Online 🚀');
 });
 
 app.post('/api/generate', async (req, res) => {
-  const { prompt, history } = req.body;
+  const { prompt, history = [] } = req.body;
 
   try {
     const completion = await openai.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
-        ...history, // This allows the AI to "remember" previous versions for modifications
+        ...history, 
         { role: "user", content: prompt }
       ],
-      response_format: { type: "json_object" }
+      response_format: { type: "json_object" } // Forces strict JSON output
     });
 
     const result = JSON.parse(completion.choices[0].message.content);
-    res.json(result);
+
+    // Normalize response to ensure keys match frontend expectations
+    res.json({
+      planner: result.planner || result.plan || "Plan generated.",
+      ui_tree: result.ui_tree,
+      explanation: result.explanation || "No explanation provided."
+    });
   } catch (error) {
     console.error("Backend Error:", error);
-    res.status(500).json({ error: "Failed to generate UI" });
+    res.status(500).json({ error: "Failed to generate UI. Check Groq API and Prompt structure." });
   }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Backend running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Backend running on port ${PORT}`);
+});
