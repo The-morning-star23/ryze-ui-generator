@@ -36,8 +36,10 @@ export const Navbar = ({ logoText = "RYZE", links = [] }) => (
     <div className="font-black text-xl tracking-tighter text-blue-600">{logoText}</div>
     <div className="flex gap-6">
       {links.map((link, i) => {
-        // Robust check: if the AI sends { text: "Label", href: "/" } instead of a string
-        const label = typeof link === 'object' ? (link.text || link.label || JSON.stringify(link)) : link;
+        // Extract string label from potential AI objects
+        const label = typeof link === 'object' && link !== null 
+          ? (link.label || link.text || link.url || "Link") 
+          : link;
         return (
           <span key={i} className="text-xs font-bold text-gray-400 cursor-pointer hover:text-black transition-colors uppercase">
             {label}
@@ -73,11 +75,17 @@ export const Sidebar = ({ items = [], children }) => (
   <div className="flex w-full border border-gray-200 rounded-2xl overflow-hidden h-[450px] bg-white shadow-inner">
     <div className="w-48 bg-gray-50 border-r border-gray-100 p-4 space-y-1 flex-shrink-0">
       <div className="text-[10px] font-black text-gray-400 uppercase mb-4 px-2">Menu</div>
-      {items.map((item, i) => (
-        <div key={i} className="text-xs font-bold text-gray-600 p-2.5 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-lg transition-all cursor-pointer">
-          {item}
-        </div>
-      ))}
+      {items.map((item, i) => {
+        // Extract string label from potential AI objects
+        const label = typeof item === 'object' && item !== null 
+          ? (item.label || item.text || "Item") 
+          : item;
+        return (
+          <div key={i} className="text-xs font-bold text-gray-600 p-2.5 hover:bg-white hover:text-blue-600 hover:shadow-sm rounded-lg transition-all cursor-pointer">
+            {label}
+          </div>
+        );
+      })}
     </div>
     <div className="flex-1 p-6 bg-white overflow-y-auto">
       {children}
