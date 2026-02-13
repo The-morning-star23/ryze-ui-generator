@@ -1,6 +1,6 @@
 import React from 'react';
 
-// 1. Button - Fixed variants, no custom CSS allowed by AI
+// 1. Button - Reusable styled button with variants
 export const Button = ({ label, variant = 'primary', ...props }) => {
   const styles = variant === 'primary' 
     ? "bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors" 
@@ -18,10 +18,11 @@ export const Card = ({ title, description, children }) => (
 );
 
 // 3. Input - Standardized form field
-export const Input = ({ label, placeholder, type = 'text' }) => (
+export const Input = ({ label, placeholder, type = 'text', ...props }) => (
   <div className="flex flex-col gap-1.5 w-full">
     {label && <label className="text-xs font-bold text-gray-500 uppercase tracking-tight">{label}</label>}
     <input 
+      {...props}
       type={type} 
       placeholder={placeholder} 
       className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" 
@@ -29,16 +30,20 @@ export const Input = ({ label, placeholder, type = 'text' }) => (
   </div>
 );
 
-// 4. Navbar - Global Navigation
+// 4. Navbar - Top navigation with dynamic links and robust label handling
 export const Navbar = ({ logoText = "RYZE", links = [] }) => (
   <nav className="flex items-center justify-between p-4 border border-gray-100 rounded-xl bg-white shadow-sm mb-6">
     <div className="font-black text-xl tracking-tighter text-blue-600">{logoText}</div>
     <div className="flex gap-6">
-      {links.map((link, i) => (
-        <span key={i} className="text-xs font-bold text-gray-400 cursor-pointer hover:text-black transition-colors uppercase">
-          {link}
-        </span>
-      ))}
+      {links.map((link, i) => {
+        // Robust check: if the AI sends { text: "Label", href: "/" } instead of a string
+        const label = typeof link === 'object' ? (link.text || link.label || JSON.stringify(link)) : link;
+        return (
+          <span key={i} className="text-xs font-bold text-gray-400 cursor-pointer hover:text-black transition-colors uppercase">
+            {label}
+          </span>
+        );
+      })}
     </div>
   </nav>
 );
@@ -99,14 +104,17 @@ export const Chart = ({ title, type = "Performance" }) => (
   </div>
 );
 
-// 8. Modal - Absolute Overlay for Demo stability
+// 8. Modal - Defensive rendering for children
 export const Modal = ({ title, children, isOpen = true }) => {
   if (!isOpen) return null;
   return (
     <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-6 animate-in fade-in duration-300">
       <div className="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl border border-white/20 animate-in zoom-in-95 duration-200">
         <h3 className="text-xl font-black text-gray-800 mb-2 tracking-tight">{title}</h3>
-        <div className="text-sm text-gray-500 leading-relaxed mb-6">{children}</div>
+        <div className="text-sm text-gray-500 leading-relaxed mb-6">
+          {/* If children is an object with a text property, render text to avoid Error #31 */}
+          {typeof children === 'object' && children !== null ? (children.text || JSON.stringify(children)) : children}
+        </div>
         <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all">
           Confirm & Close
         </button>
