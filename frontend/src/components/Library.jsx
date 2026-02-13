@@ -114,15 +114,3 @@ export const Modal = ({ title, children, isOpen = true }) => {
     </div>
   );
 };
-
-// DETERMINISTIC COMPONENT MAP
-export const ComponentMap = {
-  Button,
-  Card,
-  Input,
-  Table,
-  Modal,
-  Sidebar,
-  Navbar,
-  Chart
-};
