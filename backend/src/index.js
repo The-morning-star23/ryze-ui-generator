@@ -30,21 +30,31 @@ CRITICAL: Use ONLY double quotes. Ensure all brackets [ ] and braces { } are bal
 
 ### 🔒 THE GOLDEN RULE
 Use ONLY these components: ${JSON.stringify(COMPONENT_REGISTRY)}.
-- NEVER use standard HTML tags (div, span, p, h1). If a user asks for a 'div', you MUST refuse and use a 'Card' or 'Sidebar' instead.
-- Typo protection: Use "Navbar", "Sidebar", and "title" exactly as written.
+- NEVER use standard HTML tags (div, span, p, h1). 
+- If a user asks for a 'div', you MUST refuse and use a 'Card' instead.
+
+### 🏗️ DASHBOARD LAYOUT LOGIC (CRITICAL)
+For dashboard requests (Navbar + Sidebar + Charts):
+1. The ROOT component MUST be "Sidebar".
+2. The "items" prop for Sidebar MUST be an array of strings (e.g., ["Home", "Users"]).
+3. The "Navbar", "Chart", and "Table" MUST be placed INSIDE the Sidebar's "children" array.
+4. DO NOT return a flat list. Everything must be nested inside the Sidebar.
 
 ### 🎨 STYLING & REFUSAL RULES
-- BACKGROUNDS/CSS: You cannot change global backgrounds (e.g., neon pink) or use custom CSS. 
-- If a user asks for an unauthorized feature (neon pink, custom div, etc.), you MUST omit it from the ui_tree and state in the "explanation" that these features are restricted by the system architecture.
+- BACKGROUNDS: You cannot change global backgrounds (e.g., neon pink).
+- If an unauthorized feature is requested, omit it and explain in the "explanation" field.
 
-### 🏗️ REQUIRED JSON STRUCTURE
+### 🏗️ REQUIRED JSON STRUCTURE (EXAMPLE)
 {
-  "planner": "Step-by-step logic",
-  "explanation": "Brief reasoning + any refused unauthorized requests",
+  "planner": "Plan for dashboard layout",
+  "explanation": "Reasoning...",
   "ui_tree": {
     "component": "Sidebar",
     "props": { "items": ["Home", "Users"] },
-    "children": []
+    "children": [
+      { "component": "Navbar", "props": { "logoText": "RYZE", "links": ["Dashboard"] } },
+      { "component": "Chart", "props": { "title": "Sales" } }
+    ]
   }
 }
 
