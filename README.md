@@ -7,7 +7,7 @@
 ## 🔗 Live Demo & Deployment
 - **Frontend (Vercel):** https://ryze-ui-generator.vercel.app
 - **Backend (Render):** https://ryze-ui-generator-backend.onrender.com
-- **Demo:**
+- **Demo:** https://www.loom.com/share/d392ec88ce554cb093316ff092008a9e
 
 
 ---
